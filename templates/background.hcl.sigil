@@ -1,0 +1,88 @@
+job "{{ $.APP }}-{{ $.PROCESS_TYPE }}" {
+  datacenters = ["{{ $.DATACENTER }}"]
+  type        = "service"
+
+  meta {
+    "dokku_app"           = "{{ $.APP }}"
+    "dokku_process_type"  = "{{ $.PROCESS_TYPE }}"
+    "dokku_deployment_id" = "{{ $.DEPLOYMENT_ID }}"
+    "dokku_commit_full"   = "{{ $.GIT_REV }}"
+  }
+
+  update {
+    auto_revert       = true
+    canary            = 0
+    health_check      = "task_states"
+    healthy_deadline  = "5m"
+    max_parallel      = 1
+    min_healthy_time  = "10s"
+    progress_deadline = "10m"
+    stagger           = "30s"
+  }
+
+  migrate {
+    health_check     = "task_states"
+    healthy_deadline = "5m"
+    max_parallel     = 1
+    min_healthy_time = "10s"
+  }
+
+  group "{{ $.APP }}-{{ $.PROCESS_TYPE }}" {
+    count = {{ $.PROCESS_COUNT }}
+
+    ephemeral_disk {
+      size = 300
+    }
+
+    meta = {}
+
+    restart {
+      attempts = 5
+      delay    = "15s"
+      interval = "1m"
+      mode     = "fail"
+    }
+
+    task "{{ $.APP }}-{{ $.PROCESS_TYPE }}" {
+      driver = "docker"
+      leader = true
+      kill_timeout   = "{{ $.KILL_TIMEOUT }}s"
+      shutdown_delay = "{{ $.SHUTDOWN_DELAY }}s"
+
+      config {
+        image   = "{{ $.IMAGE }}"
+        command = "/start"
+
+        args = [
+          "{{ $.PROCESS_TYPE }}",
+        ]
+
+        labels = {
+          "com.dokku.project.name"         = "{{ $.APP }}"
+          "com.dokku.project.version"      = "{{ $.DEPLOYMENT_ID }}"
+          "com.dokku.project.process-type" = "{{ $.PROCESS_TYPE }}"
+          "nomad.job.name"                 = "{{ $.APP }}-{{ $.PROCESS_TYPE }}"
+          "nomad.job.task_group_name"      = "{{ $.APP }}-{{ $.PROCESS_TYPE }}"
+          "nomad.job.task_name"            = "{{ $.APP }}-{{ $.PROCESS_TYPE }}"
+        }
+
+        network_mode = "host"
+      }
+
+      env {
+        APP = "{{ $.APP }}"
+        LOG_PATH = "${NOMAD_ALLOC_DIR}/logs"
+        {{ $.ENVIRONMENT_VARIABLES }}
+      }
+
+      resources {
+        cpu    = {{ $.RESOURCE_CPU }}
+        memory = {{ $.RESOURCE_MEMORY }}
+
+        network {
+          mbits = {{ $.RESOURCE_NETWORK_MBITS }}
+        }
+      }
+    }
+  }
+}

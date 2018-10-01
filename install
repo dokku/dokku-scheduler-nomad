@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/property-functions"
+
+scheduler-nomad-install() {
+  declare desc="scheduler-nomad install plugin trigger"
+  declare trigger="scheduler-nomad-install"
+
+  mkdir -p "${DOKKU_LIB_ROOT}/data/scheduler-nomad"
+  chown -R "${DOKKU_SYSTEM_USER}:${DOKKU_SYSTEM_GROUP}" "${DOKKU_LIB_ROOT}/data/scheduler-nomad"
+
+  fn-plugin-property-setup "scheduler-nomad"
+}
+
+scheduler-nomad-install "$@"

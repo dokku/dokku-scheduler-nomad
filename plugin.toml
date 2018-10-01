@@ -1,0 +1,4 @@
+[plugin]
+description = "dokku scheduler-nomad plugin"
+version = "0.0.1"
+[plugin.config]

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+
+scheduler-nomad-post-create() {
+  declare desc="scheduler-nomad post-create plugin trigger"
+  declare trigger="scheduler-nomad-post-create"
+  declare APP="$1"
+
+  mkdir -p "${DOKKU_LIB_ROOT}/data/scheduler-nomad/${APP}"
+  chown -R "${DOKKU_SYSTEM_USER}:${DOKKU_SYSTEM_GROUP}" "${DOKKU_LIB_ROOT}/data/scheduler-nomad/${APP}"
+}
+
+scheduler-nomad-post-create "$@"

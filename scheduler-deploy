@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+
+
+scheduler-nomad-scheduler-deploy() {
+  declare desc="deploys an image tag for a given application"
+  declare trigger="scheduler-nomad scheduler-deploy"
+  declare DOKKU_SCHEDULER="$1" APP="$2" IMAGE_TAG="$3"
+
+  if [[ "$DOKKU_SCHEDULER" != "nomad" ]]; then
+    return
+  fi
+
+  local line PROC_TYPE PROC_COUNT CONTAINER_INDEX
+  local DOKKU_SCALE_FILE="$DOKKU_ROOT/$APP/DOKKU_SCALE"
+  local DEPLOYMENT_ID="$(date +%s)"
+  local TMP_JOB_FILE
+  TMP_JOB_FILE=$(mktemp "/tmp/${FUNCNAME[0]}.XXXX")
+  trap 'rm -rf "$TMP_JOB_FILE" > /dev/null' RETURN INT TERM EXIT
+
+  dokku_log_info2 "Deploying via nomad"
+  IMAGE=$(get_deploying_app_image_name "$APP" "$IMAGE_TAG")
+  plugn trigger pre-deploy "$APP" "$IMAGE_TAG"
+
+  while read -r line || [[ -n "$line" ]]; do
+    [[ "$line" =~ ^#.* ]] && continue
+    line="$(strip_inline_comments "$line")"
+    PROC_TYPE=${line%%=*}
+    PROC_COUNT=${line#*=}
+
+    dokku_log_info1 "Deploying ${PROC_TYPE} to ${PROC_COUNT}"
+
+    # todo: proper resource management
+    # todo: pull out all of these configuration variables
+    DNS_SERVER="127.0.0.53"
+    DOKKU_CHECK_INTERVAL=10
+    DOKKU_CHECK_PATH=/
+    DOKKU_CHECKS_TIMEOUT=30
+    DOKKU_DOCKER_STOP_TIMEOUT=10
+    DOKKU_WAIT_TO_RETIRE=10
+    GIT_REV=abcdef12
+    RESOURCE_CPU=100
+    RESOURCE_MEMORY=256 
+    RESOURCE_NETWORK_MBITS=10
+    NOMAD_DATACENTER=dc1
+
+    local template="$PLUGIN_AVAILABLE_PATH/scheduler-nomad/templates/web.hcl.sigil"
+    [[ "$PROC_TYPE" != web ]] && template="$PLUGIN_AVAILABLE_PATH/scheduler-nomad/templates/background.hcl.sigil"
+
+    # TODO: figure out a way to shim in environment variables
+    SIGIL_PARAMS=(-f "$template" APP="$APP"
+        CHECK_INTERVAL="$DOKKU_CHECK_INTERVAL" CHECK_TIMEOUT="$DOKKU_CHECKS_TIMEOUT" CHECK_PATH="$DOKKU_CHECK_PATH"
+        RESOURCE_CPU="$RESOURCE_CPU" RESOURCE_MEMORY="$RESOURCE_MEMORY"
+        RESOURCE_NETWORK_MBITS="$RESOURCE_NETWORK_MBITS" DNS_SERVER="$DNS_SERVER"
+        DATACENTER="$NOMAD_DATACENTER" IMAGE="$IMAGE"
+        ENVIRONMENT_VARIABLES=""
+        GIT_REV="$GIT_REV" DEPLOYMENT_ID="$DEPLOYMENT_ID"
+        KILL_TIMEOUT="$DOKKU_DOCKER_STOP_TIMEOUT" SHUTDOWN_DELAY="$DOKKU_WAIT_TO_RETIRE"
+        PROCESS_COUNT="$PROC_COUNT" PROCESS_TYPE="$PROC_TYPE")
+
+
+    sigil "${SIGIL_PARAMS[@]}" | cat -s > $TMP_JOB_FILE
+
+    # TODO: create a package for hclfmt
+    # hclfmt -w $TMP_JOB_FILE
+    levant deploy -force-count $TMP_JOB_FILE | sed "s/^/       /"
+  done < "$DOKKU_SCALE_FILE"
+
+  dokku_log_info2 "Deploy complete"
+
+  dokku_log_info1 "Running post-deploy"
+  plugn trigger core-post-deploy "$APP" "" "" "$IMAGE_TAG"
+  plugn trigger post-deploy "$APP" "" "" "$IMAGE_TAG"
+}
+
+scheduler-nomad-scheduler-deploy "$@"
