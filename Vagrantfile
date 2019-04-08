@@ -82,6 +82,8 @@ sudo service docker restart
 echo "#{quay_password}" | sudo docker login -u="#{quay_username}" --password-stdin quay.io
 sudo mkdir -p /root/.docker
 sudo cp /home/vagrant/.docker/config.json /root/.docker/config.json
+sudo chown -R vagrant:vagrant /home/vagrant/.docker
+sudo chown -R root:root /root/.docker
 
 # Make sure we can actually use docker as the vagrant user
 sudo usermod -aG docker vagrant
