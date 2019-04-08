@@ -255,8 +255,8 @@ echo "Installing autocomplete..."
 nomad -autocomplete-install
 
 echo "Installing Dokku"
-wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
-export SOURCE="https://packagecloud.io/dokku/dokku/ubuntu/"
+wget -nv -O - https://packagecloud.io/dokku/dokku-betafish/gpgkey | sudo apt-key add -
+export SOURCE="https://packagecloud.io/dokku/dokku-betafish/ubuntu/"
 export OS_ID="$(lsb_release -cs 2> /dev/null || echo "trusty")"
 echo "utopicvividwilyxenialyakketyzestyartfulbionic" | grep -q "$OS_ID" || OS_ID="trusty"
 echo "deb $SOURCE $OS_ID main" | sudo tee /etc/apt/sources.list.d/dokku-betafish.list > /dev/null
