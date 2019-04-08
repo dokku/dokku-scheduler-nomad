@@ -39,16 +39,15 @@ scheduler-nomad-scheduler-deploy() {
 
     dokku_log_info1 "Deploying ${PROC_TYPE} to ${PROC_COUNT}"
 
-    # todo: proper resource management
     # todo: pull out all of these configuration variables
     DOKKU_CHECK_INTERVAL=10
     DOKKU_CHECK_PATH=/
     DOKKU_CHECKS_TIMEOUT=30
     DOKKU_DOCKER_STOP_TIMEOUT=10
     DOKKU_WAIT_TO_RETIRE=10
-    RESOURCE_CPU=100
-    RESOURCE_MEMORY=256 
-    RESOURCE_NETWORK_MBITS=10
+    RESOURCE_CPU=$(plugn trigger resource-get-property "$APP" "$PROC_TYPE" "reserve" "cpu" || echo 100)
+    RESOURCE_MEMORY=$(plugn trigger resource-get-property "$APP" "$PROC_TYPE" "limit" "memory" || echo 256)
+    RESOURCE_NETWORK_MBITS=$(plugn trigger resource-get-property "$APP" "$PROC_TYPE" "limit" "network" || echo 10)
     NOMAD_DATACENTER=$(fn-plugin-property-get "scheduler-nomad" "$APP" "nomad-datacenter" "dc1")
 
     local template="$PLUGIN_AVAILABLE_PATH/scheduler-nomad/templates/web.hcl.sigil"
