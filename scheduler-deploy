@@ -49,7 +49,6 @@ scheduler-nomad-scheduler-deploy() {
     RESOURCE_CPU=100
     RESOURCE_MEMORY=256 
     RESOURCE_NETWORK_MBITS=10
-    NOMAD_DATACENTER=dc1
     NOMAD_DATACENTER=$(fn-plugin-property-get "scheduler-nomad" "$APP" "nomad-datacenter" "dc1")
 
     local template="$PLUGIN_AVAILABLE_PATH/scheduler-nomad/templates/web.hcl.sigil"
