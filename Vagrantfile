@@ -299,7 +299,7 @@ dokku apps:create python-sample
 dokku registry:set python-sample server quay.io/
 dokku registry:set python-sample image-repo dokku/python-sample
 dokku registry:set python-sample username dokku
-sudo apt-get install asciinema
+sudo apt-get install -qq -o=Dpkg::Use-Pty=0 -y asciinema
 
 # dokku clone python-sample https://github.com/josegonzalez/python-sample.git
 
