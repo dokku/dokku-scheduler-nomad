@@ -49,15 +49,15 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -o=Dpkg::Use-Pty=0 -y un
 pushd /tmp/ > /dev/null
 
 echo "Fetching Nomad..."
-NOMAD_VERSION=0.8.6
+NOMAD_VERSION=0.8.7
 curl -sSL https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip -o nomad.zip
 
 echo "Fetching Consul..."
-CONSUL_VERSION=1.2.3
+CONSUL_VERSION=1.4.4
 curl -sSL https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip -o consul.zip
 
 echo "Fetching Levant..."
-LEVANT_VERSION=0.2.2
+LEVANT_VERSION=0.2.7
 curl -sL https://github.com/jrasell/levant/releases/download/${LEVANT_VERSION}/linux-amd64-levant -o levant
 
 sudo mkdir -p /etc/nomad.d
