@@ -17,7 +17,7 @@ scheduler-nomad-set-cmd() {
   declare desc="set or clear a scheduler-nomad property for an app"
   local cmd="scheduler-nomad:set" argv=("$@"); [[ ${argv[0]} == "$cmd" ]] && shift 1
   declare APP="$1" KEY="$2" VALUE="$3"
-  local VALID_KEYS=("nomad-addr")
+  local VALID_KEYS=("nomad-addr" "nomad-datacenter")
   [[ -z "$APP" ]] && dokku_log_fail "Please specify an app to run the command on"
   [[ -z "$KEY" ]] && dokku_log_fail "No key specified"
 
