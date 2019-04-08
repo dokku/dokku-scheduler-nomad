@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/property-functions"
 
 
 scheduler-nomad-scheduler-deploy() {
@@ -23,6 +25,12 @@ scheduler-nomad-scheduler-deploy() {
   IMAGE=$(get_deploying_app_image_name "$APP" "$IMAGE_TAG")
   plugn trigger pre-deploy "$APP" "$IMAGE_TAG"
 
+  ENV_VAR_NAME="$(fn-plugin-property-get "git" "$APP" "rev-env-var")"
+  if [[ -z "$ENV_VAR_NAME" ]] && ! fn-plugin-property-exists "git" "$APP" "rev-env-var"; then
+    ENV_VAR_NAME="GIT_REV"
+  fi
+  GIT_REV=$(config_get "$APP" "$ENV_VAR_NAME")
+
   while read -r line || [[ -n "$line" ]]; do
     [[ "$line" =~ ^#.* ]] && continue
     line="$(strip_inline_comments "$line")"
@@ -38,7 +46,6 @@ scheduler-nomad-scheduler-deploy() {
     DOKKU_CHECKS_TIMEOUT=30
     DOKKU_DOCKER_STOP_TIMEOUT=10
     DOKKU_WAIT_TO_RETIRE=10
-    GIT_REV=abcdef12
     RESOURCE_CPU=100
     RESOURCE_MEMORY=256 
     RESOURCE_NETWORK_MBITS=10
