@@ -265,7 +265,7 @@ wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
 export SOURCE="https://packagecloud.io/dokku/dokku/ubuntu/"
 echo "deb $SOURCE $OS_ID main" | sudo tee /etc/apt/sources.list.d/dokku.list > /dev/null
 
-sudo apt-get update
+sudo apt-get update > /dev/null
 
 echo "dokku dokku/web_config boolean false"              | sudo debconf-set-selections
 echo "dokku dokku/vhost_enable boolean true"             | sudo debconf-set-selections
