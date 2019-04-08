@@ -255,8 +255,8 @@ echo "Installing autocomplete..."
 nomad -autocomplete-install
 
 echo "Installing Dokku"
-wget -nv -O - https://packagecloud.io/dokku/dokku-betafish/gpgkey | sudo apt-key add -
-export SOURCE="https://packagecloud.io/dokku/dokku-betafish/ubuntu/"
+wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
+export SOURCE="https://packagecloud.io/dokku/dokku/ubuntu/"
 export OS_ID="$(lsb_release -cs 2> /dev/null || echo "trusty")"
 echo "utopicvividwilyxenialyakketyzestyartfulbionic" | grep -q "$OS_ID" || OS_ID="trusty"
 echo "deb $SOURCE $OS_ID main" | sudo tee /etc/apt/sources.list.d/dokku-betafish.list > /dev/null
@@ -274,7 +274,7 @@ echo "dokku dokku/skip_key_file boolean true"            | sudo debconf-set-sele
 echo "dokku dokku/key_file string /root/.ssh/id_rsa.pub" | sudo debconf-set-selections
 echo "dokku dokku/nginx_enable boolean false"            | sudo debconf-set-selections
 
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -o=Dpkg::Use-Pty=0 -y dokku=1538358025:0.12.13build+ed190527
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -o=Dpkg::Use-Pty=0 -y dokku
 sudo dokku plugin:install-dependencies --core
 sudo dokku plugin:install https://github.com/crisward/dokku-clone.git clone
 sudo dokku plugin:install https://github.com/dokku/dokku-registry.git registry
