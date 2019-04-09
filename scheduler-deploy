@@ -31,6 +31,9 @@ scheduler-nomad-scheduler-deploy() {
   fi
   GIT_REV=$(config_get "$APP" "$ENV_VAR_NAME")
 
+  _NOMAD_ADDR=$(fn-plugin-property-get "scheduler-nomad" "$APP" "nomad-addr" "")
+  [[ -n "$_NOMAD_ADDR" ]] && export NOMAD_ADDR="$_NOMAD_ADDR"
+
   while read -r line || [[ -n "$line" ]]; do
     [[ "$line" =~ ^#.* ]] && continue
     line="$(strip_inline_comments "$line")"
