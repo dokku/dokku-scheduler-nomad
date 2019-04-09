@@ -38,7 +38,8 @@ end
 
 
 $script = <<-SCRIPT
-CURRENT_IP="$(ifconfig eth0 | grep "inet " | xargs | cut -d' ' -f2)"
+ADVERTISE_ADDR="$(ifconfig eth0 | grep "inet " | xargs | cut -d' ' -f2)"
+
 # Update apt and get dependencies
 sudo apt-get update > /dev/null
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -o=Dpkg::Use-Pty=0 -y unzip curl vim \
@@ -98,7 +99,7 @@ cat <<-EOF
   "addresses": {
     "dns": "127.0.0.1"
   },
-  "advertise_addr": "10.0.2.15",
+  "advertise_addr": "ADVERTISE_ADDR",
   "bind_addr": "0.0.0.0",
   "client_addr": "0.0.0.0",
   "data_dir": "/var/lib/consul/",
@@ -131,7 +132,7 @@ cat <<-EOF
   "ui": true
 }
 EOF
-) | sudo tee /etc/consul.d/default.json > /dev/null
+) | sed "s/ADVERTISE_ADDR/$ADVERTISE_ADDR/" | sudo tee /etc/consul.d/default.json > /dev/null
 
 (
 cat <<-EOF
@@ -187,9 +188,9 @@ cat <<-EOF
     "serf": "0.0.0.0"
   },
   "advertise": {
-    "http": "10.0.2.15:4646",
-    "rpc": "10.0.2.15:4647",
-    "serf": "10.0.2.15:4648"
+    "http": "ADVERTISE_ADDR:4646",
+    "rpc": "ADVERTISE_ADDR:4647",
+    "serf": "ADVERTISE_ADDR:4648"
   },
   "client": {
     "enabled": true,
@@ -218,7 +219,7 @@ cat <<-EOF
   }
 }
 EOF
-) | sudo tee /etc/nomad.d/default.json > /dev/null
+) | sed "s/ADVERTISE_ADDR/$ADVERTISE_ADDR/" | sudo tee /etc/nomad.d/default.json > /dev/null
 
 (
 cat <<-EOF
