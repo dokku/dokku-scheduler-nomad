@@ -63,7 +63,7 @@ curl -sL https://github.com/jrasell/levant/releases/download/${LEVANT_VERSION}/l
 sudo mkdir -p /etc/nomad.d
 sudo chmod a+w /etc/nomad.d
 
-# Set hostname's IP to made advertisement Just Work
+# Set hostname's IP to make advertisement Just Work
 #sudo sed -i -e "s/.*nomad.*/$(ip route get 1 | awk '{print $NF;exit}') nomad/" /etc/hosts
 
 echo "Installing Docker..."
