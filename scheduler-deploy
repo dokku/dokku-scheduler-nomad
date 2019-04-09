@@ -66,8 +66,6 @@ scheduler-nomad-scheduler-deploy() {
 
     sigil "${SIGIL_PARAMS[@]}" | cat -s > $TMP_JOB_FILE
 
-    # TODO: create a package for hclfmt
-    # hclfmt -w $TMP_JOB_FILE
     levant deploy -force-count $TMP_JOB_FILE | sed "s/^/       /"
   done < "$DOKKU_SCALE_FILE"
 
