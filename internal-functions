@@ -36,6 +36,7 @@ cmd-scheduler-nomad-report-single() {
   local flag_map=(
     "--scheduler-nomad-addr: $(fn-plugin-property-get "scheduler-nomad" "$APP" "nomad-addr" "")"
     "--scheduler-nomad-datacenter: $(fn-plugin-property-get "scheduler-nomad" "$APP" "nomad-datacenter" "dc1")"
+    "--scheduler-levant-version: $(levant version | head -n1)"
   )
 
   if [[ -z "$INFO_FLAG" ]]; then
