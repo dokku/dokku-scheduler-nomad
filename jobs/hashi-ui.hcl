@@ -3,6 +3,16 @@ job "hashi-ui" {
   priority    = 75
   type        = "service"
 
+  update {
+    auto_revert      = false
+    canary           = 0
+    health_check     = "checks"
+    healthy_deadline = "9m"
+    max_parallel     = 2
+    min_healthy_time = "10s"
+    stagger          = "10s"
+  }
+
   group "hashi-ui" {
     count = 1
 
