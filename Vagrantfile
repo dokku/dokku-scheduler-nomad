@@ -275,7 +275,7 @@ echo "Installing Dokku"
 export SOURCE="https://packagecloud.io/dokku/dokku-betafish/ubuntu/"
 export OS_ID="$(lsb_release -cs 2> /dev/null || echo "trusty")"
 
-# wget -nv -O dokku-betafish.gpgkey https://packagecloud.io/dokku/dokku-betafish/gpgkey
+# curl -fsSL https://packagecloud.io/dokku/dokku-betafish/gpgkey -o dokku-betafish.gpgkey
 # sudo apt-key add dokku-betafish.gpgkey
 # echo "utopicvividwilyxenialyakketyzestyartfulbionic" | grep -q "$OS_ID" || OS_ID="trusty"
 # echo "deb $SOURCE $OS_ID main" | sudo tee /etc/apt/sources.list.d/dokku-betafish.list > /dev/null
