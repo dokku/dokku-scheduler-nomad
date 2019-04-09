@@ -49,17 +49,23 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -o=Dpkg::Use-Pty=0 -y un
 
 pushd /tmp/ > /dev/null
 
-echo "Fetching Nomad..."
-NOMAD_VERSION=0.8.7
-curl -sSL https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip -o nomad.zip
+if [[ ! -f nomad.zip ]]; then
+    echo "Fetching Nomad..."
+    NOMAD_VERSION=0.8.7
+    curl -sSL https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip -o nomad.zip
+fi
 
-echo "Fetching Consul..."
-CONSUL_VERSION=1.4.4
-curl -sSL https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip -o consul.zip
+if [[ ! -f consul.zip ]]; then
+    echo "Fetching Consul..."
+    CONSUL_VERSION=1.4.4
+    curl -sSL https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip -o consul.zip
+fi
 
-echo "Fetching Levant..."
-LEVANT_VERSION=0.2.7
-curl -sL https://github.com/jrasell/levant/releases/download/${LEVANT_VERSION}/linux-amd64-levant -o levant
+if [[ ! -f levant ]]; then
+    echo "Fetching Levant..."
+    LEVANT_VERSION=0.2.7
+    curl -sL https://github.com/jrasell/levant/releases/download/${LEVANT_VERSION}/linux-amd64-levant -o levant
+fi
 
 sudo mkdir -p /etc/nomad.d
 sudo chmod a+w /etc/nomad.d
@@ -70,27 +76,33 @@ sudo chmod a+w /etc/nomad.d
 echo "Installing Docker..."
 if [[ -f /etc/apt/sources.list.d/docker.list ]]; then
     echo "Docker repository already installed; Skipping"
+elif grep -q docker.com /etc/apt/sources.list; then
+    echo "Docker repository already installed; Skipping"
 else
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o docker.gpgkey
+    sudo apt-key add docker.gpgkey
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
     sudo apt-get update > /dev/null
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -o=Dpkg::Use-Pty=0 -y docker-ce
+
+    # Restart docker to make sure we get the latest version of the daemon if there is an upgrade
+    sudo service docker restart
 fi
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -o=Dpkg::Use-Pty=0 -y docker-ce
 
-# Restart docker to make sure we get the latest version of the daemon if there is an upgrade
-sudo service docker restart
 
-echo "#{quay_password}" | sudo docker login -u="#{quay_username}" --password-stdin quay.io
-sudo mkdir -p /root/.docker
-sudo cp /home/vagrant/.docker/config.json /root/.docker/config.json
-sudo chown -R vagrant:vagrant /home/vagrant/.docker
-sudo chown -R root:root /root/.docker
+if [[ ! -f /home/vagrant/.docker/config.json ]] || ! grep -q quay.io /home/vagrant/.docker/config.json; then
+  echo "#{quay_password}" | sudo docker login -u="#{quay_username}" --password-stdin quay.io
+  sudo mkdir -p /root/.docker
+  sudo cp /home/vagrant/.docker/config.json /root/.docker/config.json
+  sudo chown -R vagrant:vagrant /home/vagrant/.docker
+  sudo chown -R root:root /root/.docker
+fi
 
 # Make sure we can actually use docker as the vagrant user
 sudo usermod -aG docker vagrant
 
 echo "Installing Consul..."
-unzip /tmp/consul.zip
+test -f consul || unzip /tmp/consul.zip
 sudo install consul /usr/bin/consul
 sudo mkdir -p /etc/consul.d /var/lib/consul
 (
@@ -167,7 +179,7 @@ EOF
 sudo systemctl restart systemd-resolved.service
 
 echo "Installing Nomad..."
-unzip nomad.zip
+test -f nomad || unzip nomad.zip
 sudo install nomad /usr/bin/nomad
 sudo mkdir -p /var/lib/nomad
 (
@@ -254,17 +266,22 @@ do
   sudo install /tmp/${bin} /usr/local/bin/${bin}
 done
 
-echo "Installing autocomplete..."
-nomad -autocomplete-install
+if ! grep -q nomad /home/vagrant/.bashrc; then
+  echo "Installing autocomplete..."
+  nomad -autocomplete-install
+fi
 
 echo "Installing Dokku"
-wget -nv -O - https://packagecloud.io/dokku/dokku-betafish/gpgkey | sudo apt-key add -
 export SOURCE="https://packagecloud.io/dokku/dokku-betafish/ubuntu/"
 export OS_ID="$(lsb_release -cs 2> /dev/null || echo "trusty")"
-echo "utopicvividwilyxenialyakketyzestyartfulbionic" | grep -q "$OS_ID" || OS_ID="trusty"
-echo "deb $SOURCE $OS_ID main" | sudo tee /etc/apt/sources.list.d/dokku-betafish.list > /dev/null
 
-wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
+# wget -nv -O dokku-betafish.gpgkey https://packagecloud.io/dokku/dokku-betafish/gpgkey
+# sudo apt-key add dokku-betafish.gpgkey
+# echo "utopicvividwilyxenialyakketyzestyartfulbionic" | grep -q "$OS_ID" || OS_ID="trusty"
+# echo "deb $SOURCE $OS_ID main" | sudo tee /etc/apt/sources.list.d/dokku-betafish.list > /dev/null
+
+curl -fsSL https://packagecloud.io/dokku/dokku/gpgkey -o dokku.gpgkey
+sudo apt-key add dokku.gpgkey
 export SOURCE="https://packagecloud.io/dokku/dokku/ubuntu/"
 echo "deb $SOURCE $OS_ID main" | sudo tee /etc/apt/sources.list.d/dokku.list > /dev/null
 
@@ -279,8 +296,8 @@ echo "dokku dokku/nginx_enable boolean false"            | sudo debconf-set-sele
 
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -o=Dpkg::Use-Pty=0 -y dokku
 sudo dokku plugin:install-dependencies --core
-sudo dokku plugin:install https://github.com/crisward/dokku-clone.git clone
-sudo dokku plugin:install https://github.com/dokku/dokku-registry.git registry
+grep -q clone <(dokku plugin:list) || sudo dokku plugin:install https://github.com/crisward/dokku-clone.git clone
+grep -q registry <(dokku plugin:list) || sudo dokku plugin:install https://github.com/dokku/dokku-registry.git registry
 
 sudo mkdir -p /home/dokku/.docker
 sudo cp /home/vagrant/.docker/config.json /home/dokku/.docker/config.json
