@@ -21,7 +21,7 @@ job "hashi-ui" {
       leader = true
 
       config {
-        image        = "jippi/hashi-ui"
+        image        = "jippi/hashi-ui:v1.0.0"
         network_mode = "host"
         port_map {
           http = 3000

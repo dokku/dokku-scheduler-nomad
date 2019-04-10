@@ -11,7 +11,7 @@ job "traefik" {
       leader = true
 
       config {
-        image        = "traefik:1.7.0"
+        image        = "traefik:1.7.10"
         network_mode = "host"
         args         = ["--configfile=/local/traefik.conf"]
       }
