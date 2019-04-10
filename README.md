@@ -22,11 +22,3 @@ To start the server, you'll need to set some arguments to log into quay.io
 # start the server
 vagrant --quay-username="SOME_USERNAME" --quay-password="SOME_PASSWORD" up
 ```
-
-## TODO
-
-- trigger scheduler-logs-failed: figure out a way to show the last failed deploy (if there was one)
-- trigger scheduler-run: figure out a way to express parameterized jobs
-- trigger install: install levant binary
-- levant: add support for configuring all it's environment variables
-- jobs: add support for environment variables... somehow
