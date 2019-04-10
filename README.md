@@ -1,6 +1,6 @@
 # dokku-scheduler-nomad
 
-A Dokku plugin to integrate with nomad.
+ALPHA (DO NOT USE): A Dokku plugin to integrate with nomad.
 
 ## Testing
 
