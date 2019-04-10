@@ -12,7 +12,7 @@ You can start a local testing server. This will:
 - install nomad
 - install dokku in unattended mode with nginx disabled
 - install the dokku-clone plugin
-- install the dokku-registry plugin (both commercial)
+- install the dokku-registry plugin
 - start hashi-ui and traefik in the nomad cluster
 - set nomad as the scheduler
 
