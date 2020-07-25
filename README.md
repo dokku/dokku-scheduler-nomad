@@ -1,5 +1,7 @@
 # dokku-scheduler-nomad
 
+> If this plugin is missing a feature you need, consider [sponsoring development](https://github.com/dokku/.github/blob/master/SPONSORING.md). Pull requests always welcome!
+
 A Dokku plugin to integrate with nomad.
 
 ## Testing
